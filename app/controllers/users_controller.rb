@@ -1,50 +1,52 @@
 class UsersController < ApplicationController
-    before_action :set_user, only: [:show, :update, :destroy]
+    rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
     #GET users
     def index
-        @users = User.all
+        users = User.all
 
-        render json: @users
+        render json: users
     end
 
     #GET single user
     def show
-        render json: @user
+        id = params[:id]
+        customer = Customer.find(id)
+        render json: user
     end
 
     #POST user
     def create
-        @user = User.new(user_params)
-
-        if @user.save
-            render json: @user, status: :created, location: @user
-        else
-            render json: @user.errors, status: :unprocessable_entity
-        end
+        user = User.create(user_params)
+        render json: customer
     end
 
     #PATCH user
     def update
-        if @user.update(user_params)
-            render json: @user
-        else
-            render json: @user.errors, status: :unprocessable_entity
-        end
+        id = params[:id]
+        user = User.find(id)
+        user.update(user_params)
+        render json: user
     end
 
     #DELETE
     def destroy
-        @user.destroy
+        id = params[:id]
+        user = User.find(id)
+        user.destroy
+        render json: {message: "user was destroyed"}
     end
 
     private
 
-    def set_user
-        @user = User.find(params[:id])
+    def user_params
+        params.permit(:name, :email, :password_digest)
     end
 
-    def user_params
-        params.require(:user).permit(:name, :email, :password_digest)
+    def render_not_found_response
+        render json: { error: "User not found"},
+        status: :not_found
     end
+
+
 end

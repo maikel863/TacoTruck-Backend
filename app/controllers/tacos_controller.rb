@@ -1,50 +1,50 @@
 class TacosController < ApplicationController
-    before_action :set_taco, only: [:show, :update, :destroy]
+    rescue_from ActiveRecord::RecordNotFound, with: :render_not_found_response
 
     # GET /tacos
     def index
-        @tacos = Taco.all
+        tacos = Taco.all
 
-        render json: @tacos
+        render json: tacos
     end
 
     # GET single taco
     def show
-        render json: @taco
+        taco = find_taco
+        render json: taco
     end
 
     #POST tacos
     def create
-        @taco = Taco.new(taco_params)
-
-        if @taco.save
-            render json: @taco, status:  :created, location: @taco
-        else
-            render json: @taco.errors, status: :unprocessable_entity
-        end
+        taco = Taco.new(taco_params)
+        render json: taco, status: :created
     end
 
     #PATCH tacos
     def update
-        if @taco.update(taco_params)
-            render json: @taco
-        else
-            render json: @taco.errors, status: :unprocessable_entity
-        end
+        taco = find_taco
+        taco.update(taco_params)
+        render json: taco
     end
 
     #DELETE tacos
     def destroy
-        @taco.destroy
+        taco = find_taco
+        taco.destroy
+        head :no_content
     end
 
     private
     
-    def set_taco
-        @taco = Taco.find(params[:id])
+    def find_taco
+        Taco.find(params[:id])
     end
 
     def taco_params
-        params.require(:taco).permit(:name, :description, :image, :price, :user_id)
+        params.permit(:name, :description, :image, :price, :user_id)
+    end
+
+    def render_not_found_response
+        render json: {error: "taco not found"}, status: :not_found
     end
 end

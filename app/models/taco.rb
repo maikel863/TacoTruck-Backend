@@ -1,5 +1,5 @@
 class Taco < ApplicationRecord
-    has_many :order_tacos
-    has_many :orders, through: :order_tacos
+    has_many :orders
+    has_many :users, through: :orders
     
 end
